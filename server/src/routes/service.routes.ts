@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import * as controller from '../controllers/service.controller';
+import { requireAuth, requireRole } from '../middleware/auth';
+import { requireCsrf } from '../middleware/security';
+import { validate } from '../middleware/validate';
+import { idParamSchema, listQuerySchema, serviceCreateSchema, serviceUpdateSchema } from '../validators/schemas';
+import { asyncHandler } from '../utils/async-handler';
+const router = Router();
+router.use(asyncHandler(requireAuth));
+router.get('/', validate(listQuerySchema, 'query'), asyncHandler(controller.listServices));
+router.post('/', requireRole('admin'), requireCsrf, validate(serviceCreateSchema), asyncHandler(controller.createService));
+router.get('/:id', validate(idParamSchema, 'params'), asyncHandler(controller.getService));
+router.patch('/:id', requireRole('admin'), requireCsrf, validate(idParamSchema, 'params'), validate(serviceUpdateSchema), asyncHandler(controller.updateService));
+router.delete('/:id', requireRole('admin'), requireCsrf, validate(idParamSchema, 'params'), asyncHandler(controller.deleteService));
+export default router;
